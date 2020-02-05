@@ -108,10 +108,7 @@ const addMessageTextObject = async data => {
             .input("MessageContentType", messages["message"].type)
             .input("MessageContentId", messages["message"].id)
             .input("MessageContentText", messages["message"].text)
-            .input(
-              "MessageContentProviderType",
-              messages["message"].contentProvider["type"]
-            )
+            .input("MessageContentProviderType", "")
             .input("ImageOriginalUrl", "")
             .execute("SP_AddMessageObject")
             .then(result => {

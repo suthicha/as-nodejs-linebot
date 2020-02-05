@@ -7,9 +7,9 @@ const morgan = require("morgan");
 const cors = require("cors");
 const line = require("@line/bot-sdk");
 const fs = require("fs");
-const { LineClient } = require("messaging-api-line");
 const config = require("config");
 const mssql = require("mssql");
+const { LineClient } = require("messaging-api-line");
 
 app.use(morgan("dev"));
 app.use(cors());
@@ -28,13 +28,13 @@ app.use("/webhook", async (req, res) => {
         const filePath = await downloadImage(messages.message["id"]);
         await addMessageImageObject(req.body, filePath);
       } catch {}
-    } else if (messages.message["type"] === "text") {
+    } else {
       try {
         await addMessageTextObject(req.body);
       } catch {}
     }
   }
-  res.status(200).json({ messages });
+  res.sendStatus(200);
 });
 
 const downloadImage = async id => {

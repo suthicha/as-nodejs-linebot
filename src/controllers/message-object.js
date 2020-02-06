@@ -93,4 +93,31 @@ const addMessageTextObject = async data => {
   });
 };
 
-module.exports = { addMessageImageObject, addMessageTextObject, downloadImage };
+const getMessageObject = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let pool = new mssql.ConnectionPool(config.CONNECTION);
+      await pool
+        .connect()
+        .then(() => {
+          let req = new mssql.Request(pool);
+          req
+            .execute("SP_SelMessageObject")
+            .then(result => {
+              resolve(result);
+            })
+            .catch(error => reject(error));
+        })
+        .catch(error => reject(error));
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+module.exports = {
+  addMessageImageObject,
+  addMessageTextObject,
+  getMessageObject,
+  downloadImage
+};

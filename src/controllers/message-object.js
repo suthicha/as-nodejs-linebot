@@ -20,6 +20,54 @@ const downloadImage = async id => {
   });
 };
 
+const downloadFile = async message => {
+  return new Promise(async (resolve, reject) => {
+    const { id, type, fileName, fileSize } = message;
+    const saveFileName = "/upload/" + fileName;
+    await client.retrieveMessageContent(id).then(buffer => {
+      fs.writeFile(process.cwd() + saveFileName, buffer, err => {
+        if (err) throw err;
+        resolve(saveFileName);
+      });
+    });
+  });
+};
+
+const addMessageFileObject = async (data, url) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { replyToken, messages } = data;
+
+      let pool = new mssql.ConnectionPool(config.CONNECTION);
+      await pool
+        .connect()
+        .then(() => {
+          let req = new mssql.Request(pool);
+          req
+            .input("ReplyToken", replyToken)
+            .input("MessageType", messages["type"])
+            .input("MessageReplyToken", messages["replyToken"])
+            .input("MessageSourceType", messages["source"].type)
+            .input("MessageSourceUserId", messages["source"].userId)
+            .input("MessageMode", messages["mode"])
+            .input("MessageContentType", messages["message"].type)
+            .input("MessageContentId", messages["message"].id)
+            .input("MessageContentText", "")
+            .input("MessageContentProviderType", "")
+            .input("ImageOriginalUrl", url)
+            .execute("SP_AddMessageObject")
+            .then(result => {
+              resolve(result);
+            })
+            .catch(error => reject(error));
+        })
+        .catch(connErr => reject(connErr));
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 const addMessageImageObject = async (data, url) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -118,6 +166,8 @@ const getMessageObject = async () => {
 module.exports = {
   addMessageImageObject,
   addMessageTextObject,
+  addMessageFileObject,
   getMessageObject,
-  downloadImage
+  downloadImage,
+  downloadFile
 };
